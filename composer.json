@@ -1,0 +1,101 @@
+{
+    "name": "hinto-com/job-monitor-bundle",
+    "version": "0.0.1",
+    "type": "symfony-bundle",
+    "description": "Symfony bundle for monitoring job progress",
+    "keywords": [
+        "job",
+        "monitor",
+        "doctrine",
+        "messenger"
+    ],
+    "license": "MIT",
+    "authors" : [
+        {"name" : "Fabiano Roberto", "email" : "fabiano.roberto@hintogroup.eu"}
+    ],
+    "require": {
+        "php": ">=8.3",
+        "symfony/console": "^6.4|^7.4|^8.0",
+        "symfony/framework-bundle": "^6.4|^7.4|^8.0",
+        "symfony/http-foundation": "^6.4|^7.4|^8.0",
+        "symfony/messenger": "^6.4|^7.4|^8.0",
+        "symfony/process": "^6.4|^7.4|^8.0",
+        "symfony/routing": "^6.4|^7.4|^8.0",
+        "symfony/twig-bundle": "^6.4|^7.4|^8.0",
+        "doctrine/dbal": "^3.0|^4.0"
+    },
+    "suggest": {
+        "symfony/doctrine-messenger": "Integrate with Doctrine Messenger for database-backed message queues"
+    },
+    "autoload": {
+        "psr-4": {
+            "Hinto\\Bundle\\JobMonitorBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Hinto\\Bundle\\JobMonitorBundle\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "cs-fix": [
+            "vendor/bin/php-cs-fixer fix"
+        ],
+        "cs-fix-dr": [
+            "vendor/bin/php-cs-fixer fix --dry-run"
+        ],
+        "phpunit": [
+            "vendor/bin/phpunit --testdox"
+        ],
+        "phpstan": [
+            "vendor/bin/phpstan --memory-limit=1G analyse"
+        ],
+        "phpstan-cc": [
+            "vendor/bin/phpstan clear"
+        ],
+        "sa": [
+            "@rector",
+            "@cs-fix",
+            "@phpstan"
+        ],
+        "rector": [
+            "vendor/bin/rector process"
+        ],
+        "changelog": "conventional-changelog",
+        "release": "conventional-changelog --commit",
+        "release:patch": "conventional-changelog --patch --commit",
+        "release:minor": "conventional-changelog --minor --commit",
+        "release:major": "conventional-changelog --major --commit",
+        "auto-scripts": {
+            "cache:clear": "symfony-cmd",
+            "assets:install %PUBLIC_DIR%": "symfony-cmd"
+        }
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.94",
+        "marcocesarato/php-conventional-changelog": "^1.17",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-doctrine": "^2.0",
+        "phpstan/phpstan-symfony": "^2.0",
+        "phpunit/phpunit": "^12.5",
+        "rector/rector": "^2.3",
+        "symfony/flex": "^2.10"
+    },
+    "extra": {
+        "symfony": {
+            "allow-contrib": true,
+            "endpoint": "https://api.github.com/repos/hinto-com/job-monitor-bundle/contents/recipe/manifest.json"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "platform-check": false,
+        "allow-plugins": {
+            "phpstan/extension-installer": true,
+            "symfony/flex": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

@@ -1,0 +1,73 @@
+<?php
+
+declare(strict_types=1);
+
+namespace ConventionalChangelog;
+
+use ConventionalChangelog\Git\Repository;
+use ConventionalChangelog\Helper\SemanticVersion;
+
+$releaseMessagePrefix = 'chore(release): 🔖';
+
+return [
+    'preset' => [
+        // Breaking changes section
+        'breaking_changes' => ['label' => '⚠ BREAKING CHANGES', 'description' => 'Code changes that potentially causes other components to fail'],
+        // Types section
+        'feat' => ['label' => 'Features', 'description' => 'New features'],
+        'perf' => ['label' => 'Performance Improvements', 'description' => 'Code changes that improves performance'],
+        'fix' => ['label' => 'Bug Fixes', 'description' => 'Bugs and issues resolution'],
+        'hotfix' => ['label' => 'Hot Fixes', 'description' => 'Production bugs and issues resolution'],
+        'refactor' => ['label' => 'Code Refactoring', 'description' => 'A code change that neither fixes a bug nor adds a feature'],
+        'style' => ['label' => 'Styles', 'description' => 'Changes that do not affect the meaning of the code'],
+        'test' => ['label' => 'Tests', 'description' => 'Adding missing tests or correcting existing tests'],
+        'build' => ['label' => 'Builds', 'description' => 'Changes that affect the build system or external dependencies '],
+        'ci' => ['label' => 'Continuous Integrations', 'description' => 'Changes to CI configuration files and scripts'],
+        'docs' => ['label' => 'Documentation', 'description' => 'Documentation changes'],
+        'chore' => ['label' => 'Chores', 'description' => "Other changes that don't modify the source code or test files"],
+        'revert' => ['label' => 'Reverts', 'description' => 'Reverts a previous commit'],
+    ],
+    'types' => ['feat', 'fix', 'hotfix', 'perf', 'docs', 'chore'],
+    // Ignore changelogs
+    'ignorePatterns' => [
+        '/' . \preg_quote($releaseMessagePrefix, '/') . '.*/i',
+        '/chore\(changelog\)[:].*/i',
+    ],
+    'commitUrlFormat' => '{{host}}/{{owner}}/{{repository}}/commit/{{hash}}',
+    'compareUrlFormat' => '{{host}}/{{owner}}/{{repository}}/compare/{{previousTag}}...{{currentTag}}',
+    'releaseCommitMessageFormat' => "{$releaseMessagePrefix}{{currentTag}}",
+    'postRun' => function () use ($releaseMessagePrefix) {
+        $lastTag = Repository::getLastTagRefname();
+        $lastTagCommit = Repository::getLastTagRefnameCommit();
+        $lastCommit = Repository::getLastCommit();
+
+        if ($lastTagCommit !== $lastCommit) {
+            return;
+        }
+
+        $binFile = __DIR__ . '/vendor/bin/conventional-changelog';
+        $readmeFile = __DIR__ . '/README.md';
+        $semverRegex = SemanticVersion::PATTERN;
+
+        // Get version
+        $version = new SemanticVersion($lastTag);
+
+        // Update version on readme
+        $readme = \file_get_contents($readmeFile);
+        $readme = \preg_replace("/(https:\\/\\/img\\.shields\\.io\\/badge\\/version)-({$semverRegex})-/m", '$1-' . $version->getVersion() . '-', $readme);
+        \file_put_contents($readmeFile, $readme);
+
+        // Update version on bin
+        $bin = \file_get_contents($binFile);
+        $bin = \preg_replace("/(\\('conventional-changelog', )'({$semverRegex})'/m", '$1\'' . $version->getVersion() . '\'', $bin);
+        \file_put_contents($binFile, $bin);
+
+        // Delete tag
+        Repository::deleteTag($lastTag);
+
+        // Commit and tag
+        $message = $releaseMessagePrefix . $version->getVersion();
+        Repository::commit($message, [$binFile, $readmeFile], true, true, true);
+        Repository::tag($lastTag);
+    },
+];

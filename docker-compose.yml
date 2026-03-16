@@ -1,0 +1,7 @@
+services:
+    php:
+        build: .
+        environment:
+            - COMPOSER_ROOT_VERSION=dev-main
+        volumes:
+            - .:/srv/app
