@@ -4,6 +4,18 @@
 All notable changes to this project will be documented in this file.
 <!--- END HEADER -->
 
+## [1.0.2](https://github.com/hinto-com/job-monitor-bundle/compare/v1.0.1...v1.0.2) (2026-03-17)
+
+### Bug Fixes
+
+
+##### Deps
+
+* 🔧 update dependencies and improve Dotenv bootstrapping ([167c72](https://github.com/hinto-com/job-monitor-bundle/commit/167c72a31c05ad14b8529093b638e8fee022a089))
+
+
+---
+
 ## [1.0.1](https://github.com/hinto-com/job-monitor-bundle/compare/v1.0.0...v1.0.1) (2026-03-17)
 
 ### Features
