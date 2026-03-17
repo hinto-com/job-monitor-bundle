@@ -4,6 +4,18 @@
 All notable changes to this project will be documented in this file.
 <!--- END HEADER -->
 
+## [1.0.1](https://github.com/hinto-com/job-monitor-bundle/compare/v1.0.0...v1.0.1) (2026-03-17)
+
+### Features
+
+
+##### Templates
+
+* ♻️ Refactor templates with base Twig layout ([27273f](https://github.com/hinto-com/job-monitor-bundle/commit/27273f46012fcca1ec2b4c2955b1c8d03670787e))
+
+
+---
+
 ## [1.0.0](https://github.com/hinto-com/job-monitor-bundle/compare/0.0.0...v1.0.0) (2026-03-17)
 
 ### Features
