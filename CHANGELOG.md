@@ -4,6 +4,11 @@
 All notable changes to this project will be documented in this file.
 <!--- END HEADER -->
 
+## [1.0.3](https://github.com/hinto-com/job-monitor-bundle/compare/v1.0.2...v1.0.3) (2026-03-17)
+
+
+---
+
 ## [1.0.2](https://github.com/hinto-com/job-monitor-bundle/compare/v1.0.1...v1.0.2) (2026-03-17)
 
 ### Bug Fixes
