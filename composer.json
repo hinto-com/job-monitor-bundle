@@ -85,7 +85,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": true,
-            "endpoint": "https://api.github.com/repos/hinto-com/job-monitor-bundle/contents/recipe/manifest.json"
+            "endpoint": "https://api.github.com/repos/hinto-com/recipes/contents/hinto-com/job-monitor-bundle/1.0/manifest.json"
         }
     },
     "config": {
