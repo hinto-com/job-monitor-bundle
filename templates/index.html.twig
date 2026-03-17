@@ -1,136 +1,255 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Job Dashboard{% endblock %}</title>
-    <link rel="icon" href="{{ asset('favicon.ico') }}">
-    {% block stylesheets %}
-        <style>
-            body { font-family: sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
-            h1 { font-size: 24px; margin-bottom: 20px; }
-            .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 30px; }
-            .card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-            .card h3 { margin: 0 0 8px; font-size: 14px; color: #666; text-transform: uppercase; letter-spacing: 0.05em; }
-            .card .value { font-size: 36px; font-weight: bold; }
-            .card.red .value { color: #e53e3e; }
-            .card.green .value { color: #38a169; }
-            .card.blue .value { color: #3182ce; }
-            .card.orange .value { color: #dd6b20; }
-            table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-            th { background: #edf2f7; text-align: left; padding: 12px 16px; font-size: 13px; color: #4a5568; }
-            td { padding: 12px 16px; border-top: 1px solid #e2e8f0; font-size: 14px; }
-            tr:hover td { background: #f7fafc; }
-            .badge { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
-            .badge-red { background: #fed7d7; color: #c53030; }
-            .badge-green { background: #c6f6d5; color: #276749; }
-            button.retry { background: #3182ce; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
-            button.retry:hover { background: #2b6cb0; }
-            .section-title { font-size: 18px; font-weight: 600; margin: 30px 0 12px; }
-            .worker-list { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-            .worker-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
-            .worker-item:last-child { border: none; }
-            .no-workers { color: #a0aec0; font-size: 14px; }
-            #last-updated { font-size: 12px; color: #a0aec0; margin-bottom: 16px; }
-        </style>
-    {% endblock %}
+{% extends "base.html.twig" %}
 
-    {% block javascripts %}
-        <script>
-            const statsUrl  = '{{ path('hinto_job-monitoring_dashboard_api_stats') }}';
-            const retryBase = '{{ path('hinto_job-monitoring_dashboard_retry', {id: '__ID__'}) }}';
+{% block stylesheets %}
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
 
-            function drawChart(canvasId, labels, values, color) {
-                const canvas = document.getElementById(canvasId);
-                if (!canvas) return;
-                const ctx = canvas.getContext('2d');
-                const max = Math.max(...values, 1);
-                const width = canvas.width;
-                const height = canvas.height;
-                ctx.clearRect(0, 0, width, height);
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
 
-                const barWidth = Math.floor(width / labels.length) - 4;
-                labels.forEach((label, i) => {
-                    const barHeight = Math.floor((values[i] / max) * (height - 20));
-                    const x = i * (barWidth + 4);
-                    const y = height - barHeight - 20;
-                    ctx.fillStyle = color;
-                    ctx.fillRect(x, y, barWidth, barHeight);
-                    ctx.fillStyle = '#555';
-                    ctx.font = '11px sans-serif';
-                    ctx.fillText(label.slice(0, 10), x, height - 4);
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h3 {
+            margin: 0 0 8px;
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .card .value {
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .card.red .value {
+            color: #e53e3e;
+        }
+
+        .card.green .value {
+            color: #38a169;
+        }
+
+        .card.blue .value {
+            color: #3182ce;
+        }
+
+        .card.orange .value {
+            color: #dd6b20;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        }
+
+        th {
+            background: #edf2f7;
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #4a5568;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        tr:hover td {
+            background: #f7fafc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-red {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .badge-green {
+            background: #c6f6d5;
+            color: #276749;
+        }
+
+        button.retry {
+            background: #3182ce;
+            color: #fff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        button.retry:hover {
+            background: #2b6cb0;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 30px 0 12px;
+        }
+
+        .worker-list {
+            background: #fff;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        }
+
+        .worker-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 13px;
+        }
+
+        .worker-item:last-child {
+            border: none;
+        }
+
+        .no-workers {
+            color: #a0aec0;
+            font-size: 14px;
+        }
+
+        #last-updated {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-bottom: 16px;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        const statsUrl = '{{ path('hinto_job-monitoring_dashboard_api_stats') }}';
+        const retryBase = '{{ path('hinto_job-monitoring_dashboard_retry', {id: '__ID__'}) }}';
+
+        function drawChart(canvasId, labels, values, color) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const max = Math.max(...values, 1);
+            const width = canvas.width;
+            const height = canvas.height;
+            ctx.clearRect(0, 0, width, height);
+
+            const barWidth = Math.floor(width / labels.length) - 4;
+            labels.forEach((label, i) => {
+                const barHeight = Math.floor((values[i] / max) * (height - 20));
+                const x = i * (barWidth + 4);
+                const y = height - barHeight - 20;
+                ctx.fillStyle = color;
+                ctx.fillRect(x, y, barWidth, barHeight);
+                ctx.fillStyle = '#555';
+                ctx.font = '11px sans-serif';
+                ctx.fillText(label.slice(0, 10), x, height - 4);
+            });
+        }
+
+        function updateStats() {
+            fetch(statsUrl)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('total-failed').textContent = data.total_failed;
+
+                    const alertBanner = document.getElementById('alert-banner');
+                    if (data.total_failed > 10) {
+                        alertBanner.style.display = 'block';
+                    } else {
+                        alertBanner.style.display = 'none';
+                    }
+
+                    for (const [queue, stats] of Object.entries(data.queue_stats)) {
+                        const pendingEl = document.getElementById('pending-' + queue);
+                        const processingEl = document.getElementById('processing-' + queue);
+                        const delayedEl = document.getElementById('delayed-' + queue);
+                        if (pendingEl) pendingEl.textContent = stats.pending;
+                        if (processingEl) processingEl.textContent = stats.processing;
+                        if (delayedEl) delayedEl.textContent = stats.delayed;
+                    }
+
+                    const workerList = document.getElementById('worker-list');
+                    if (data.workers.length === 0) {
+                        workerList.innerHTML = '<p class="no-workers">No workers running</p>';
+                    } else {
+                        workerList.innerHTML = data.workers.map(w =>
+                            `<div class="worker-item">
+                        <span>PID ${w.pid}</span>
+                        <span>${w.command}</span>
+                        <span class="badge badge-green">Running</span>
+                    </div>`
+                        ).join('');
+                    }
+
+                    const queueNames = Object.keys(data.queue_stats);
+                    const pendingValues = queueNames.map(q => data.queue_stats[q].pending);
+                    drawChart('queue-chart', queueNames, pendingValues, '#3182ce');
+
+                    const now = new Date();
+                    document.getElementById('last-updated').textContent =
+                        'Last updated: ' + now.toLocaleTimeString();
+                })
+                .catch(() => {
+                    document.getElementById('last-updated').textContent = 'Update failed. Retrying...';
                 });
-            }
+        }
 
-            function updateStats() {
-                fetch(statsUrl)
-                    .then(res => res.json())
-                    .then(data => {
-                        document.getElementById('total-failed').textContent = data.total_failed;
+        function retryJob(id) {
+            const url = retryBase.replace('__ID__', id);
+            fetch(url, {method: 'POST'})
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'retried') {
+                        const row = document.getElementById('job-row-' + id);
+                        if (row) row.remove();
+                    } else {
+                        alert('Retry failed: ' + data.message);
+                    }
+                });
+        }
 
-                        const alertBanner = document.getElementById('alert-banner');
-                        if (data.total_failed > 10) {
-                            alertBanner.style.display = 'block';
-                        } else {
-                            alertBanner.style.display = 'none';
-                        }
+        updateStats();
+        setInterval(updateStats, 10000);
+    </script>
+{% endblock %}
 
-                        for (const [queue, stats] of Object.entries(data.queue_stats)) {
-                            const pendingEl    = document.getElementById('pending-' + queue);
-                            const processingEl = document.getElementById('processing-' + queue);
-                            const delayedEl    = document.getElementById('delayed-' + queue);
-                            if (pendingEl)    pendingEl.textContent    = stats.pending;
-                            if (processingEl) processingEl.textContent = stats.processing;
-                            if (delayedEl)    delayedEl.textContent    = stats.delayed;
-                        }
-
-                        const workerList = document.getElementById('worker-list');
-                        if (data.workers.length === 0) {
-                            workerList.innerHTML = '<p class="no-workers">No workers running</p>';
-                        } else {
-                            workerList.innerHTML = data.workers.map(w =>
-                                `<div class="worker-item">
-                            <span>PID ${w.pid}</span>
-                            <span>${w.command}</span>
-                            <span class="badge badge-green">Running</span>
-                        </div>`
-                            ).join('');
-                        }
-
-                        const queueNames = Object.keys(data.queue_stats);
-                        const pendingValues = queueNames.map(q => data.queue_stats[q].pending);
-                        drawChart('queue-chart', queueNames, pendingValues, '#3182ce');
-
-                        const now = new Date();
-                        document.getElementById('last-updated').textContent =
-                            'Last updated: ' + now.toLocaleTimeString();
-                    })
-                    .catch(() => {
-                        document.getElementById('last-updated').textContent = 'Update failed. Retrying...';
-                    });
-            }
-
-            function retryJob(id) {
-                const url = retryBase.replace('__ID__', id);
-                fetch(url, { method: 'POST' })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.status === 'retried') {
-                            const row = document.getElementById('job-row-' + id);
-                            if (row) row.remove();
-                        } else {
-                            alert('Retry failed: ' + data.message);
-                        }
-                    });
-            }
-
-            updateStats();
-            setInterval(updateStats, 10000);
-        </script>
-    {% endblock %}
-</head>
-<body class="{% block body_class %}{% endblock %}">
-<div class="app-shell">
+{% block header %}
     <header class="app-header">
         <div class="app-header__inner">
             <div class="brand">
@@ -151,84 +270,74 @@
             </div>
         </div>
     </header>
+{% endblock %}
 
-    <main class="app-main">
-        {% block body %}
-            <h1>🗂 Background Job Monitor</h1>
-            <p id="last-updated">Loading...</p>
+{% block body %}
+    <h1>🗂 Background Job Monitor</h1>
+    <p id="last-updated">Loading...</p>
 
-            <div id="alert-banner" style="display:none; background:#fed7d7; color:#c53030; padding:12px 16px; border-radius:8px; margin-bottom:20px; font-weight:600;">
-                Warning: high failure count detected. Check your workers and handlers.
+    <div id="alert-banner"
+         style="display:none; background:#fed7d7; color:#c53030; padding:12px 16px; border-radius:8px; margin-bottom:20px; font-weight:600;">
+        Warning: high failure count detected. Check your workers and handlers.
+    </div>
+
+    <div id="summary-cards" class="grid">
+        {% for queue, stats in queue_stats %}
+            <div class="card blue">
+                <h3>{{ queue }} / Pending</h3>
+                <div class="value" id="pending-{{ queue }}">{{ stats.pending }}</div>
             </div>
-
-            <div id="summary-cards" class="grid">
-                {% for queue, stats in queue_stats %}
-                    <div class="card blue">
-                        <h3>{{ queue }} / Pending</h3>
-                        <div class="value" id="pending-{{ queue }}">{{ stats.pending }}</div>
-                    </div>
-                    <div class="card orange">
-                        <h3>{{ queue }} / Processing</h3>
-                        <div class="value" id="processing-{{ queue }}">{{ stats.processing }}</div>
-                    </div>
-                    <div class="card green">
-                        <h3>{{ queue }} / Delayed</h3>
-                        <div class="value" id="delayed-{{ queue }}">{{ stats.delayed }}</div>
-                    </div>
-                {% endfor %}
-                <div class="card red">
-                    <h3>Total Failed</h3>
-                    <div class="value" id="total-failed">{{ total_failed }}</div>
-                </div>
+            <div class="card orange">
+                <h3>{{ queue }} / Processing</h3>
+                <div class="value" id="processing-{{ queue }}">{{ stats.processing }}</div>
             </div>
-
-            <div class="section-title">Active Workers</div>
-            <div class="worker-list" id="worker-list">
-                <p class="no-workers">Checking workers...</p>
+            <div class="card green">
+                <h3>{{ queue }} / Delayed</h3>
+                <div class="value" id="delayed-{{ queue }}">{{ stats.delayed }}</div>
             </div>
-
-            <div class="section-title">Queue Status Chart</div>
-            <canvas id="queue-chart" width="600" height="120" style="background:#fff; border-radius:8px; padding:10px; margin-bottom:20px;"></canvas>
-
-            <div class="section-title">Failed Jobs</div>
-            <table>
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Class</th>
-                    <th>Error</th>
-                    <th>Created At</th>
-                    <th>Action</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for job in failed_jobs %}
-                    <tr id="job-row-{{ job.id }}">
-                        <td>{{ job.id }}</td>
-                        <td><span class="badge badge-red">{{ job.class }}</span></td>
-                        <td style="max-width: 400px; word-break: break-word;">{{ job.error }}</td>
-                        <td>{{ job.created_at }}</td>
-                        <td>
-                            <button class="retry" onclick="retryJob({{ job.id }})">Retry</button>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="5" style="text-align: center; color: #a0aec0; padding: 30px;">No failed jobs</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        {% endblock %}
-    </main>
-
-    <footer class="app-footer">
-        <div class="app-footer__inner">
-            {% block footer %}
-                Symfony bundle for monitoring job progress
-            {% endblock %}
+        {% endfor %}
+        <div class="card red">
+            <h3>Total Failed</h3>
+            <div class="value" id="total-failed">{{ total_failed }}</div>
         </div>
-    </footer>
-</div>
-</body>
-</html>
+    </div>
+
+    <div class="section-title">Active Workers</div>
+    <div class="worker-list" id="worker-list">
+        <p class="no-workers">Checking workers...</p>
+    </div>
+
+    <div class="section-title">Queue Status Chart</div>
+    <canvas id="queue-chart" width="600" height="120"
+            style="background:#fff; border-radius:8px; padding:10px; margin-bottom:20px;"></canvas>
+
+    <div class="section-title">Failed Jobs</div>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Class</th>
+            <th>Error</th>
+            <th>Created At</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for job in failed_jobs %}
+            <tr id="job-row-{{ job.id }}">
+                <td>{{ job.id }}</td>
+                <td><span class="badge badge-red">{{ job.class }}</span></td>
+                <td style="max-width: 400px; word-break: break-word;">{{ job.error }}</td>
+                <td>{{ job.created_at }}</td>
+                <td>
+                    <button class="retry" onclick="retryJob({{ job.id }})">Retry</button>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center; color: #a0aec0; padding: 30px;">No failed jobs</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
