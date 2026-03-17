@@ -84,7 +84,8 @@
         "phpunit/phpunit": "^12.5",
         "rector/rector": "^2.3",
         "symfony/dotenv": "^6.4|^7.4|^8.0",
-        "symfony/flex": "^2.10"
+        "symfony/flex": "^2.10",
+        "symfony/phpunit-bridge": "^6.4|^7.4|^8.0"
     },
     "extra": {
         "symfony": {

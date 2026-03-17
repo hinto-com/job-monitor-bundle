@@ -1,0 +1,86 @@
+name: PHPUnit
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+
+jobs:
+    phpunit:
+        name: PHPUnit
+        runs-on: ubuntu-latest
+        continue-on-error: ${{ matrix.can-fail }}
+
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    -   php-version: "8.3"
+                        composer-flags: ""
+                        can-fail: false
+                        symfony-require: "6.4.*"
+                    -   php-version: "8.4"
+                        composer-flags: ""
+                        can-fail: false
+                        symfony-require: "6.4.*"
+                    -   php-version: "8.5"
+                        composer-flags: ""
+                        can-fail: false
+                        symfony-require: "6.4.*"
+                    -   php-version: "8.3"
+                        composer-flags: ""
+                        can-fail: false
+                        symfony-require: "7.4.*"
+                    -   php-version: "8.4"
+                        composer-flags: ""
+                        can-fail: false
+                        symfony-require: "7.4.*"
+                    -   php-version: "8.5"
+                        composer-flags: ""
+                        can-fail: false
+                        symfony-require: "7.4.*"
+                    -   php-version: "8.4"
+                        composer-flags: ""
+                        can-fail: false
+                        symfony-require: "8.0.*"
+                    -   php-version: "8.5"
+                        composer-flags: ""
+                        can-fail: false
+                        symfony-require: "8.0.*"
+                    -   php-version: "8.3"
+                        composer-flags: ""
+                        can-fail: true # we don't want to fail the build if we are incompatible with the next (unstable) Symfony version
+                    -   php-version: "8.4"
+                        composer-flags: ""
+                        can-fail: true # we don't want to fail the build if we are incompatible with the next (unstable) Symfony version
+                    -   php-version: "8.5"
+                        composer-flags: ""
+                        can-fail: true # we don't want to fail the build if we are incompatible with the next (unstable) Symfony version
+
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v4
+
+            -   name: Set up PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: "${{ matrix.php-version }}"
+                    coverage: "none"
+                    tools: "composer:v2,flex"
+
+            -   name: "Cache dependencies installed with composer"
+                uses: "actions/cache@v4"
+                with:
+                    path: "~/.composer/cache"
+                    key: "php-${{ matrix.php-version }}-composer-locked-${{ hashFiles('composer.lock') }}"
+                    restore-keys: "php-${{ matrix.php-version }}-composer-locked-"
+
+            -   name: "Install dependencies with composer"
+                env:
+                    SYMFONY_REQUIRE: "${{ matrix.symfony-require }}"
+                run: |
+                    composer update --no-interaction --no-progress ${{ matrix.composer-flags }}
+
+            -   name: "Run PHPUnit"
+                run: vendor/bin/phpunit --testdox

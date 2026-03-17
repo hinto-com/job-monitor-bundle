@@ -6,7 +6,9 @@ namespace Hinto\Bundle\JobMonitorBundle\Tests;
 
 use Doctrine\DBAL\Connection;
 use Hinto\Bundle\JobMonitorBundle\Service\JobMonitorService;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\CoversNothing;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -15,6 +17,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversNothing]
 class JobMonitorServiceTest extends TestCase
 {
+    #[Test]
+    #[AllowMockObjectsWithoutExpectations]
     public function testGetTotalFailed(): void
     {
         $connection = $this->createMock(Connection::class);
@@ -26,6 +30,8 @@ class JobMonitorServiceTest extends TestCase
         $this->assertSame(5, $service->getTotalFailed());
     }
 
+    #[Test]
+    #[AllowMockObjectsWithoutExpectations]
     public function testGetQueueStatsReturnsCorrectShape(): void
     {
         $connection = $this->createMock(Connection::class);
