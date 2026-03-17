@@ -3,6 +3,7 @@
 /recipe/
 /bin/
 /config/
+!/config/services.yaml
 /public/
 /composer.lock
 /symfony.lock
